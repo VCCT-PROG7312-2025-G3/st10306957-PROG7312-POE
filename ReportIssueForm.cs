@@ -140,7 +140,7 @@ namespace PROG7312_POE
                 Margin = new Padding(10, 0, 5, 0),
                 Font = new Font("Segoe UI", 10)
             };
-            btnBack.Click += (s, e) => this.Close();
+            btnBack.Click += BtnBack_Click;
 
             btnSubmit = new Button
             {
@@ -218,12 +218,13 @@ namespace PROG7312_POE
                 // Add to our custom collection
                 reportedIssues.Add(report);
                 
-                // In a real application, you would save this to a database here
-                System.Threading.Thread.Sleep(1500); // Simulate processing time
+                // Simulate processing time
+                System.Threading.Thread.Sleep(1500);
 
                 MessageBox.Show("Your report has been submitted successfully!", "Success", 
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
+                this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
@@ -234,6 +235,12 @@ namespace PROG7312_POE
                 btnSubmit.Enabled = true;
                 lblProgress.Text = "Error submitting report. Please try again.";
             }
+        }
+
+        private void BtnBack_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
         }
 
         private void UpdateFormState()
