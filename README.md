@@ -52,26 +52,8 @@ A Windows Forms application that allows citizens to report issues and service re
 ### Adding New Features
 
 1. To implement the "Local Events and Announcements" or "Service Request Status" features:
-   - Enable the corresponding buttons in `Form1.cs`
-   - Create new forms for each feature
-   - Implement the required functionality
+   - I am going to enable the corresponding buttons in `Form1.cs`
+   - I am going to create new forms for each feature
+   - I will implement the required functionality
 
-2. To modify the issue reporting workflow:
-   - Edit the `ReportIssueForm` class
-   - Update the `IssueReport` model if additional fields are needed
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## Support
-
-For support, please contact the development team or open an issue in the repository.
