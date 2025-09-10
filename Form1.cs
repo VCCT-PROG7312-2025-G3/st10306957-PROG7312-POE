@@ -8,6 +8,7 @@ namespace PROG7312_POE
     {
         private Panel navigationPanel;
         private Panel contentPanel;
+        private Panel comingSoonPanel;
         private Button currentButton;
 
         public Form1()
@@ -35,39 +36,62 @@ namespace PROG7312_POE
             navigationPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 70,
-                BackColor = Color.FromArgb(0, 64, 122) // Dark blue
+                Height = 50,  // Reduced height
+                BackColor = Color.FromArgb(0, 64, 122), // Dark blue
+                Width = 1000  // Fixed width to match form
             };
 
-            // Logo and Title
+            // Logo and Title - make it smaller
             Label titleLabel = new Label
             {
-                Text = "MUNICIPALITY SERVICES",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Text = "MUNICIPALITY",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 ForeColor = Color.White,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Dock = DockStyle.Left,
-                Width = 300,
+                Width = 200,  // Reduced width
                 Padding = new Padding(20, 0, 0, 0)
             };
 
-            // Navigation buttons
-            FlowLayoutPanel navButtonsPanel = new FlowLayoutPanel
+            // Navigation buttons - use a panel with FlowLayout
+            Panel buttonPanel = new Panel
             {
                 Dock = DockStyle.Right,
                 AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                BackColor = Color.Transparent
+                BackColor = Color.Transparent,
+                Padding = new Padding(0, 5, 10, 5)  // Add some padding
             };
 
-            Button btnReport = CreateNavButton("REPORT ISSUES");
+            FlowLayoutPanel flowPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                BackColor = Color.Transparent,
+                Margin = new Padding(0),
+                Padding = new Padding(0)
+            };
+
+            // Create buttons with shorter text
+            Button btnReport = CreateNavButton("REPORT");
             Button btnEvents = CreateNavButton("EVENTS");
-            Button btnStatus = CreateNavButton("SERVICE STATUS");
+            Button btnStatus = CreateNavButton("STATUS");
             Button btnContact = CreateNavButton("CONTACT");
 
-            // Disable buttons that are not implemented
-            btnEvents.Enabled = false;
-            btnStatus.Enabled = false;
+            // Add buttons to flow panel
+            flowPanel.Controls.Add(btnReport);
+            flowPanel.Controls.Add(btnEvents);
+            flowPanel.Controls.Add(btnStatus);
+            flowPanel.Controls.Add(btnContact);
+
+            // Add flow panel to button panel
+            buttonPanel.Controls.Add(flowPanel);
+
+            // Add to navigation panel
+            navigationPanel.Controls.Add(buttonPanel);
+            navigationPanel.Controls.Add(titleLabel);
 
             // Add click events
             btnReport.Click += (s, e) => 
@@ -81,14 +105,21 @@ namespace PROG7312_POE
                 }
             };
             
-            btnEvents.Click += (s, e) => ActivateButton(s as Button);
-            btnStatus.Click += (s, e) => ActivateButton(s as Button);
+            btnEvents.Click += (s, e) => 
+            {
+                ActivateButton(s as Button);
+                MessageBox.Show("Local Events and Announcements\n\nThis feature is coming soon!", "Coming Soon", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+            
+            btnStatus.Click += (s, e) => 
+            {
+                ActivateButton(s as Button);
+                MessageBox.Show("Service Request Status\n\nThis feature is coming soon!", "Coming Soon", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+            
             btnContact.Click += (s, e) => ShowContactInfo();
-
-            navButtonsPanel.Controls.AddRange(new Control[] { btnReport, btnEvents, btnStatus, btnContact });
-
-            navigationPanel.Controls.Add(navButtonsPanel);
-            navigationPanel.Controls.Add(titleLabel);
 
             // Content Panel
             contentPanel = new Panel
@@ -156,6 +187,16 @@ namespace PROG7312_POE
             contentPanel.Controls.Add(welcomePanel);
             contentPanel.Controls.Add(footer);
 
+            // Coming Soon Panel (initially hidden)
+            comingSoonPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Visible = false
+            };
+
+            contentPanel.Controls.Add(comingSoonPanel);
+
             // Add panels to form
             this.Controls.Add(contentPanel);
             this.Controls.Add(navigationPanel);
@@ -164,20 +205,69 @@ namespace PROG7312_POE
             ActivateButton(btnReport);
         }
 
+        private void ShowComingSoon(string featureName)
+        {
+            // Clear existing controls
+            comingSoonPanel.Controls.Clear();
+
+            // Create a table layout for centering
+            TableLayoutPanel tableLayout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                RowCount = 2,
+                ColumnCount = 1,
+                Padding = new Padding(20)
+            };
+            tableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+            tableLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+
+            // Add title
+            Label titleLabel = new Label
+            {
+                Text = featureName,
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                ForeColor = Color.FromArgb(0, 64, 122),
+                TextAlign = ContentAlignment.BottomCenter,
+                Dock = DockStyle.Fill,
+                AutoSize = false
+            };
+
+            // Add coming soon message
+            Label messageLabel = new Label
+            {
+                Text = "Coming Soon...",
+                Font = new Font("Segoe UI", 36, FontStyle.Italic),
+                ForeColor = Color.LightGray,
+                TextAlign = ContentAlignment.TopCenter,
+                Dock = DockStyle.Fill,
+                AutoSize = false
+            };
+
+            // Add controls to the panel
+            tableLayout.Controls.Add(titleLabel, 0, 0);
+            tableLayout.Controls.Add(messageLabel, 0, 1);
+            
+            comingSoonPanel.Controls.Add(tableLayout);
+            comingSoonPanel.Visible = true;
+        }
+
         private Button CreateNavButton(string text)
         {
             return new Button
             {
                 Text = text,
-                Size = new Size(150, 70),
+                Size = new Size(100, 40),
                 FlatStyle = FlatStyle.Flat,
                 FlatAppearance = { BorderSize = 0 },
                 BackColor = Color.Transparent,
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
+                Font = new Font("Segoe UI", 9, FontStyle.Regular), 
                 Cursor = Cursors.Hand,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Padding = new Padding(0, 25, 0, 0)
+                Margin = new Padding(5, 10, 5, 10), 
+                Padding = new Padding(0),
+                TextImageRelation = TextImageRelation.TextBeforeImage,
+                ImageAlign = ContentAlignment.MiddleCenter
             };
         }
 
@@ -189,7 +279,7 @@ namespace PROG7312_POE
                 currentButton.Font = new Font("Segoe UI", 10, FontStyle.Regular);
             }
 
-            button.BackColor = Color.FromArgb(0, 95, 179); // Slightly lighter blue
+            button.BackColor = Color.FromArgb(0, 95, 179);
             button.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             currentButton = button;
         }
