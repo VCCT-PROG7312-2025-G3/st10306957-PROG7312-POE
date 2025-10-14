@@ -102,6 +102,7 @@
     <Compile Include="Models\Event.cs" />
     <!-- Models -->
     <Compile Include="Models\Issue.cs" />
+    <Compile Include="Services\EventService.cs" />
     <Compile Include="Services\IEventService.cs" />
     <!-- Services -->
     <Compile Include="Services\IFileService.cs" />
