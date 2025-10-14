@@ -27,6 +27,7 @@ namespace PROG7312_POE.Forms
                 .AddScoped<IIssueRepository, IssueRepository>()
                 .AddScoped<IFileService, FileService>()
                 .AddScoped<IIssueService, IssueService>()
+                .AddScoped<IEventService, EventService>()
                 .BuildServiceProvider())
         {
         }
@@ -85,7 +86,7 @@ namespace PROG7312_POE.Forms
 
             // Set button properties
             btnReport.Click += (s, e) => ShowReportForm();
-            btnEvents.Click += (s, e) => ShowComingSoon("Events & Announcements");
+            btnEvents.Click += (s, e) => ShowEventsForm();
             btnStatus.Click += (s, e) => ShowComingSoon("Service Status");
             btnViewIssues.Click += (s, e) => ShowReportedIssues();
 
@@ -548,6 +549,25 @@ namespace PROG7312_POE.Forms
             button.BackColor = Color.FromArgb(0, 95, 179);
             button.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             currentButton = button;
+        }
+
+        private void ShowEventsForm()
+        {
+            try
+            {
+                var eventService = _serviceProvider.GetRequiredService<IEventService>();
+                using (var eventsForm = new EventsForm(eventService))
+                {
+                    this.Hide();
+                    eventsForm.ShowDialog();
+                    this.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening events: {ex.Message}", "Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void ShowComingSoon(string featureName)

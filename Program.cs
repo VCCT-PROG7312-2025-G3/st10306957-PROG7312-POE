@@ -43,10 +43,12 @@ namespace PROG7312_POE
             services.AddScoped<IIssueRepository, IssueRepository>();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IIssueService, IssueService>();
+            services.AddScoped<IEventService, EventService>();
             
             // Register forms
             services.AddScoped<MainForm>();
             services.AddScoped<ReportIssueForm>();
+            services.AddScoped<EventsForm>();
         }
     }
 }

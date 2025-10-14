@@ -33,6 +33,7 @@ namespace PROG7312_POE.Services
 
         private void InitializeSampleData()
         {
+            Console.WriteLine("Initializing sample event data...");
             var now = DateTime.Now;
             var sampleEvents = new List<Event>
             {
@@ -65,13 +66,32 @@ namespace PROG7312_POE.Services
                     CurrentAttendees = 0,
                     ContactEmail = "farmers@local.org",
                     ContactPhone = "(123) 555-1234"
+                },
+                new Event
+                {
+                    Id = _nextId++,
+                    Title = "Tech Conference 2023",
+                    Description = "Annual technology conference with workshops and keynotes.",
+                    StartDate = now.AddDays(14),
+                    EndDate = now.AddDays(16),
+                    Location = "Convention Center",
+                    Category = "Technology",
+                    Organizer = "Tech Events Inc.",
+                    MaxAttendees = 500,
+                    CurrentAttendees = 243,
+                    ContactEmail = "info@techevents.com",
+                    ContactPhone = "(555) 123-4567"
                 }
             };
 
+            Console.WriteLine($"Adding {sampleEvents.Count} sample events...");
             foreach (var evt in sampleEvents)
             {
                 AddEvent(evt);
+                Console.WriteLine($"Added event: {evt.Title} (ID: {evt.Id}) on {evt.StartDate}");
             }
+            
+            Console.WriteLine($"Total events in service: {_events.Count}");
         }
 
         private void AddEvent(Event evt)
