@@ -134,10 +134,25 @@ namespace PROG7312_POE.Forms
             addButton.FlatAppearance.BorderSize = 0;
             addButton.Click += (s, e) => ShowAddEditEventForm();
 
+            // Add Clear Filters button
+            var clearButton = new Button
+            {
+                Text = "Clear Filters",
+                BackColor = Color.White,
+                ForeColor = Color.FromArgb(0, 122, 204),
+                FlatStyle = FlatStyle.Flat,
+                Width = 100,
+                Height = 30,
+                Location = new Point(830, 5),
+                FlatAppearance = { BorderColor = Color.FromArgb(0, 122, 204) }
+            };
+            clearButton.Click += async (s, e) => await ClearFiltersAsync();
+
             filterPanel.Controls.Add(searchBox);
             filterPanel.Controls.Add(categoryCombo);
             filterPanel.Controls.Add(dateFilterCombo);
             filterPanel.Controls.Add(addButton);
+            filterPanel.Controls.Add(clearButton);
 
             // Events list
             var eventsPanel = new FlowLayoutPanel
@@ -785,11 +800,57 @@ namespace PROG7312_POE.Forms
             }
         }
 
+        private async Task ClearFiltersAsync()
+        {
+            try
+            {
+                // Find the main table and filter panel
+                var mainTable = this.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
+                if (mainTable == null) return;
+
+                var filterPanel = mainTable.GetControlFromPosition(0, 1) as Panel;
+                if (filterPanel == null) return;
+
+                // Find the search box and clear it
+                var searchBox = filterPanel.Controls.OfType<TextBox>().FirstOrDefault();
+                if (searchBox != null)
+                {
+                    searchBox.Text = "Search events...";
+                    searchBox.ForeColor = SystemColors.GrayText;
+                }
+
+                // Find and reset the category combo
+                var categoryCombo = filterPanel.Controls.OfType<ComboBox>()
+                    .FirstOrDefault(c => c.Tag?.ToString() == "categoryCombo");
+                if (categoryCombo != null && categoryCombo.Items.Count > 0)
+                {
+                    categoryCombo.SelectedIndex = 0; // Select "All Categories"
+                }
+
+                // Find and reset the date filter combo
+                var dateFilterCombo = filterPanel.Controls.OfType<ComboBox>()
+                    .FirstOrDefault(c => c.Tag?.ToString() == "dateFilterCombo");
+                if (dateFilterCombo != null && dateFilterCombo.Items.Count > 0)
+                {
+                    dateFilterCombo.SelectedIndex = 0; // Select "All Dates"
+                }
+
+                // Reload all events
+                await LoadEventsAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error clearing filters: {ex.Message}\n{ex.StackTrace}");
+                MessageBox.Show("An error occurred while clearing filters. Please try again.", 
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
         private void ShowAddEditEventForm(Event eventToEdit = null)
         {
-            // TODO: Implement add/edit event form
-            MessageBox.Show("Add/Edit Event functionality will be implemented here.", "Coming Soon", 
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Implementation for adding/editing events
+            MessageBox.Show("Add/Edit Event functionality will be implemented here.", 
+                "Coming Soon", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
