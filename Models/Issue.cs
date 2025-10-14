@@ -15,8 +15,6 @@ namespace PROG7312_POE.Models
         public List<string> Attachments { get; set; } = new List<string>();
         public string ReporterName { get; set; }
         public string ReporterContact { get; set; }
-        
-        // Add attachment properties
         public string AttachmentFileName { get; set; }
         public byte[] AttachmentData { get; set; }
     }
