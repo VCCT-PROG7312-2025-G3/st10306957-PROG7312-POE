@@ -1,0 +1,40 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using PROG7312_POE.Models;
+
+namespace PROG7312_POE.Services
+{
+    
+    public interface IEventService
+    {
+        
+        Task<Event> GetEventByIdAsync(int id);
+        Task<IEnumerable<Event>> GetAllEventsAsync();
+        Task<IEnumerable<Event>> GetUpcomingEventsAsync();
+        Task<IEnumerable<Event>> GetEventsByDateRangeAsync(DateTime startDate, DateTime? endDate = null);
+        Task<IEnumerable<Event>> GetEventsByCategoryAsync(string category);
+        Task<IEnumerable<string>> GetEventCategoriesAsync();
+        
+        // for event management
+        Task<bool> AddEventAsync(Event eventItem);
+        Task<bool> UpdateEventAsync(Event eventItem);
+        Task<bool> DeleteEventAsync(int eventId);
+        
+        // for searching and filtering
+        Task<IEnumerable<Event>> SearchEventsAsync(string searchTerm);
+        Task<IEnumerable<Event>> GetEventsByOrganizerAsync(string organizer);
+        
+        // attendance management
+        Task<bool> RegisterForEventAsync(int eventId, string attendeeName, string contactInfo);
+        Task<bool> CancelRegistrationAsync(int eventId, string attendeeName);
+        
+        // for stats
+        Task<int> GetEventCountAsync();
+        Task<Dictionary<string, int>> GetEventsByCategoryCountAsync();
+        
+        // data mangement
+        Task<bool> SaveEventsToFileAsync(string filePath);
+        Task<bool> LoadEventsFromFileAsync(string filePath);
+    }
+}
