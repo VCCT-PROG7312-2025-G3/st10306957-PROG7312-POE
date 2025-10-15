@@ -12,15 +12,18 @@ namespace PROG7312_POE.Forms
     public partial class EventsForm : Form
     {
         private readonly IEventService _eventService;
+        private readonly IRecommendationService _recommendationService;
         private Event _selectedEvent;
         private bool _isLoading = true;
 
-        public EventsForm(IEventService eventService)
+        public EventsForm(IEventService eventService, IRecommendationService recommendationService)
         {
             InitializeComponent();
             _eventService = eventService;
-            
-            // Configure form
+            _recommendationService = recommendationService;
+
+
+
             this.Text = "Local Events and Announcements";
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -194,16 +197,86 @@ namespace PROG7312_POE.Forms
             {
                 _isLoading = true;
                 Console.WriteLine("Loading events...");
-                var events = (await _eventService.GetUpcomingEventsAsync()).ToList();
+
+                // Load events and show loading indicator if needed
+                var eventsTask = _eventService.GetUpcomingEventsAsync();
+
+                // Start loading recommendations in parallel
+                var recommendationsTask = _recommendationService.GetRecommendedEventsAsync();
+
+                // Wait for both tasks to complete
+                await Task.WhenAll(eventsTask, recommendationsTask);
+
+                var events = eventsTask.Result.ToList();
+                var recommendations = recommendationsTask.Result ?? new List<Event>();
+
                 Console.WriteLine($"Found {events.Count} events");
-                
-                var eventsPanel = this.Controls.OfType<TableLayoutPanel>()
-                    .FirstOrDefault()
-                    ?.Controls.OfType<FlowLayoutPanel>()
+                Console.WriteLine($"Found {recommendations.Count} recommendations");
+
+                var mainTable = this.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
+                if (mainTable == null)
+                {
+                    Console.WriteLine("ERROR: Could not find main table layout panel");
+                    return;
+                }
+
+                // Clear any existing recommendation panel
+                var existingRecPanel = mainTable.Controls.OfType<Panel>()
+                    .FirstOrDefault(p => p.Name == "recommendationsPanel");
+                existingRecPanel?.Dispose();
+
+                // Only show recommendations if we have some
+                if (recommendations.Any())
+                {
+                    var recommendationsPanel = new Panel
+                    {
+                        Name = "recommendationsPanel",
+                        Dock = DockStyle.Top,
+                        Height = 220,
+                        BackColor = Color.AliceBlue,
+                        Padding = new Padding(10),
+                        Margin = new Padding(0, 0, 0, 20)
+                    };
+
+                    var titleLabel = new Label
+                    {
+                        Text = "Recommended For You",
+                        Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                        AutoSize = true,
+                        Location = new Point(10, 10)
+                    };
+
+                    var flowPanel = new FlowLayoutPanel
+                    {
+                        Dock = DockStyle.Fill,
+                        AutoScroll = true,
+                        Padding = new Padding(30, 40, 10, 10),
+                        FlowDirection = FlowDirection.LeftToRight,
+                        WrapContents = true,
+                        AutoScrollMargin = new Size(10, 10)
+                    };
+
+                    foreach (var evt in recommendations.Take(5))
+                    {
+                        var eventCard = CreateEventCard(evt, 250);
+                        eventCard.Margin = new Padding(10);
+                        flowPanel.Controls.Add(eventCard);
+                    }
+
+                    recommendationsPanel.Controls.Add(titleLabel);
+                    recommendationsPanel.Controls.Add(flowPanel);
+
+                    // Add the recommendations panel to the main table
+                    mainTable.Controls.Add(recommendationsPanel, 0, 2);
+                    mainTable.SetRowSpan(recommendationsPanel, 1);
+                }
+
+                // Update the main events list
+                var eventsPanel = mainTable.Controls.OfType<FlowLayoutPanel>()
                     .FirstOrDefault(p => p.Name == "eventsPanel");
-                
+
                 Console.WriteLine($"eventsPanel found: {eventsPanel != null}");
-                
+
                 if (eventsPanel != null)
                 {
                     Console.WriteLine("Updating events list...");
@@ -213,7 +286,7 @@ namespace PROG7312_POE.Forms
                 else
                 {
                     Console.WriteLine("ERROR: Could not find eventsPanel in form hierarchy");
-                    MessageBox.Show("Error: Could not initialize events display. Please restart the application.", 
+                    MessageBox.Show("Error: Could not initialize events display. Please restart the application.",
                         "Initialization Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
@@ -221,7 +294,7 @@ namespace PROG7312_POE.Forms
             {
                 string errorMsg = $"Error loading events: {ex.Message}\n\n{ex.StackTrace}";
                 Console.WriteLine(errorMsg);
-                MessageBox.Show($"Error loading events: {ex.Message}", "Error", 
+                MessageBox.Show($"Error loading events: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -291,122 +364,58 @@ namespace PROG7312_POE.Forms
             }
         }
 
-        private Panel CreateEventCard(Event evt)
+        private Panel CreateEventCard(Event evt, int width = 300)
         {
             var card = new Panel
             {
-                Width = 900,
-                Height = 120,
+                Width = width,
+                Height = 180,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
-                Margin = new Padding(0, 0, 0, 15),
-                Padding = new Padding(15),
+                Margin = new Padding(5),
+                Padding = new Padding(10),
                 Cursor = Cursors.Hand,
                 Tag = evt.Id
             };
 
-            // Add hover effect
-            card.MouseEnter += (s, e) => card.BackColor = Color.FromArgb(245, 245, 245);
-            card.MouseLeave += (s, e) => card.BackColor = Color.White;
+            // Add click handler
             card.Click += (s, e) => ShowEventDetails(evt);
 
-            // Create layout for the card
-            var layout = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 3,
-                RowCount = 3,
-                CellBorderStyle = TableLayoutPanelCellBorderStyle.None
-            };
-
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 20));
-
-            // Event title
-            var titleLabel = new Label
+            // Add title
+            var title = new Label
             {
                 Text = evt.Title,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleLeft,
-                AutoEllipsis = true,
-                Dock = DockStyle.Fill,
-                ForeColor = Color.FromArgb(0, 64, 122)
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                AutoSize = false,
+                Width = card.Width - 20,
+                Height = 40,
+                Location = new Point(10, 10)
             };
+            card.Controls.Add(title);
 
-            // Date and time
-            var dateText = evt.StartDate.ToString("f");
+            // Add date
+            var dateText = $"{evt.StartDate:g}";
             if (evt.EndDate.HasValue)
             {
-                dateText += $" - {evt.EndDate.Value.ToString("t")}";
+                dateText += $" - {evt.EndDate:g}";
             }
             var dateLabel = new Label
             {
                 Text = dateText,
-                Font = new Font("Segoe UI", 9),
-                TextAlign = ContentAlignment.MiddleRight,
-                Dock = DockStyle.Fill,
-                ForeColor = Color.FromArgb(64, 64, 64)
+                Location = new Point(10, 50),
+                AutoSize = true
             };
+            card.Controls.Add(dateLabel);
 
-            // Category badge
-            var categoryLabel = new Label
-            {
-                Text = evt.Category,
-                Font = new Font("Segoe UI", 8, FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleCenter,
-                BackColor = GetCategoryColor(evt.Category),
-                ForeColor = Color.White,
-                Dock = DockStyle.Fill,
-                Margin = new Padding(5, 2, 5, 2),
-                Height = 20
-            };
-
-            // Location
-            var locationPanel = new Panel { Dock = DockStyle.Fill };
+            // Add location
             var locationLabel = new Label
             {
-                Text = $"📍 {evt.Location}",
-                Font = new Font("Segoe UI", 9),
-                TextAlign = ContentAlignment.MiddleLeft,
+                Text = evt.Location,
+                Location = new Point(10, 70),
                 AutoSize = true,
-                Location = new Point(0, 5)
+                MaximumSize = new Size(card.Width - 20, 40)
             };
-            locationPanel.Controls.Add(locationLabel);
-
-            // Attendees
-            var attendeesLabel = new Label
-            {
-                Text = $"👥 {evt.CurrentAttendees} / {evt.MaxAttendees}",
-                Font = new Font("Segoe UI", 8),
-                TextAlign = ContentAlignment.MiddleRight,
-                Dock = DockStyle.Fill,
-                ForeColor = Color.Gray
-            };
-
-            // Organizer
-            var organizerLabel = new Label
-            {
-                Text = $"By: {evt.Organizer}",
-                Font = new Font("Segoe UI", 8, FontStyle.Italic),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Dock = DockStyle.Fill,
-                ForeColor = Color.Gray
-            };
-
-            // Add controls to layout
-            layout.Controls.Add(titleLabel, 0, 0);
-            layout.Controls.Add(dateLabel, 1, 0);
-            layout.Controls.Add(categoryLabel, 2, 0);
-            layout.Controls.Add(locationPanel, 0, 1);
-            layout.Controls.Add(organizerLabel, 1, 1);
-            layout.Controls.Add(attendeesLabel, 2, 1);
-
-            // Add layout to card
-            card.Controls.Add(layout);
+            card.Controls.Add(locationLabel);
 
             return card;
         }
@@ -843,6 +852,62 @@ namespace PROG7312_POE.Forms
                 Console.WriteLine($"Error clearing filters: {ex.Message}\n{ex.StackTrace}");
                 MessageBox.Show("An error occurred while clearing filters. Please try again.", 
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        /// addidng method to display recommendations
+        private async Task ShowRecommendedEventsAsync()
+        {
+            try
+            {
+                var recommendations = await _recommendationService.GetRecommendedEventsAsync();
+                if (recommendations != null && recommendations.Any())
+                {
+                    // Find the main table
+                    var mainTable = this.Controls.OfType<TableLayoutPanel>().FirstOrDefault();
+                    if (mainTable == null) return;
+
+                    // Create a panel for recommendations
+                    var recommendationsPanel = new Panel
+                    {
+                        Dock = DockStyle.Top,
+                        Height = 200,
+                        BackColor = Color.AliceBlue,
+                        Padding = new Padding(10),
+                        Margin = new Padding(0, 0, 0, 20)
+                    };
+
+                    var titleLabel = new Label
+                    {
+                        Text = "Recommended For You",
+                        Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                        AutoSize = true,
+                        Location = new Point(10, 10)
+                    };
+
+                    var flowPanel = new FlowLayoutPanel
+                    {
+                        Dock = DockStyle.Fill,
+                        AutoScroll = true,
+                        Padding = new Padding(30, 40, 10, 10)
+                    };
+
+                    foreach (var evt in recommendations.Take(5)) // Show top 5 recommendations
+                    {
+                        var eventCard = CreateEventCard(evt, 300);
+                        flowPanel.Controls.Add(eventCard);
+                    }
+
+                    recommendationsPanel.Controls.Add(titleLabel);
+                    recommendationsPanel.Controls.Add(flowPanel);
+
+                    // Add the recommendations panel to the main table
+                    mainTable.Controls.Add(recommendationsPanel, 0, 2);
+                    mainTable.SetRowSpan(recommendationsPanel, 1);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error showing recommendations: {ex.Message}");
             }
         }
 

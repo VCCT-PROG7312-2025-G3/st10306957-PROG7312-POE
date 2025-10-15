@@ -70,12 +70,15 @@
     </Compile>
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\Issue.cs" />
+    <Compile Include="Models\UserSearch.cs" />
     <Compile Include="Services\EventService.cs" />
     <Compile Include="Services\IEventService.cs" />
     <Compile Include="Services\IFileService.cs" />
     <Compile Include="Services\FileService.cs" />
     <Compile Include="Services\IIssueService.cs" />
+    <Compile Include="Services\IRecommendationService.cs" />
     <Compile Include="Services\IssueService.cs" />
+    <Compile Include="Services\RecommendationService.cs" />
     <Compile Include="Utilities\Constants.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

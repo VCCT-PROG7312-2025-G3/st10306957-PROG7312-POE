@@ -904,6 +904,14 @@ namespace PROG7312_POE.Services
             });
         }
 
+        public async Task<List<Event>> GetActiveEventsAsync()
+        {
+            return await Task.FromResult(_events.Values
+                .Where(e => e.IsActive && e.EndDate >= DateTime.Now)
+                .OrderBy(e => e.StartDate)
+                .ToList());
+        }
+
         public void Dispose()
         {
             // Cleanup resources if needed

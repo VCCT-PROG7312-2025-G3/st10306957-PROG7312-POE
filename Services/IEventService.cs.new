@@ -5,17 +5,15 @@ using PROG7312_POE.Models;
 
 namespace PROG7312_POE.Services
 {
-    
     public interface IEventService
     {
-        
         Task<Event> GetEventByIdAsync(int id);
         Task<IEnumerable<Event>> GetAllEventsAsync();
+        Task<List<Event>> GetActiveEventsAsync();
         Task<IEnumerable<Event>> GetUpcomingEventsAsync();
         Task<IEnumerable<Event>> GetEventsByDateRangeAsync(DateTime startDate, DateTime? endDate = null);
         Task<IEnumerable<Event>> GetEventsByCategoryAsync(string category);
         Task<IEnumerable<string>> GetEventCategoriesAsync();
-
         
         // for event management
         Task<bool> AddEventAsync(Event eventItem);
@@ -34,10 +32,8 @@ namespace PROG7312_POE.Services
         Task<int> GetEventCountAsync();
         Task<Dictionary<string, int>> GetEventsByCategoryCountAsync();
         
-        // data mangement
+        // data management
         Task<bool> SaveEventsToFileAsync(string filePath);
         Task<bool> LoadEventsFromFileAsync(string filePath);
-
-        Task<List<Event>> GetActiveEventsAsync();
     }
 }

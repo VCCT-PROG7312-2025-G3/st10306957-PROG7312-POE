@@ -28,6 +28,7 @@ namespace PROG7312_POE.Forms
                 .AddScoped<IFileService, FileService>()
                 .AddScoped<IIssueService, IssueService>()
                 .AddScoped<IEventService, EventService>()
+                .AddScoped<IRecommendationService, RecommendationService>()
                 .BuildServiceProvider())
         {
         }
@@ -555,17 +556,22 @@ namespace PROG7312_POE.Forms
         {
             try
             {
-                var eventService = _serviceProvider.GetRequiredService<IEventService>();
-                using (var eventsForm = new EventsForm(eventService))
+                using (var scope = _serviceProvider.CreateScope())
                 {
+                    var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+                    var recommendationService = scope.ServiceProvider.GetRequiredService<IRecommendationService>();
+
                     this.Hide();
-                    eventsForm.ShowDialog();
+                    using (var eventsForm = new EventsForm(eventService, recommendationService))
+                    {
+                        eventsForm.ShowDialog();
+                    }
                     this.Show();
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error opening events: {ex.Message}", "Error", 
+                MessageBox.Show($"Error opening events: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

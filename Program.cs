@@ -44,7 +44,8 @@ namespace PROG7312_POE
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<IIssueService, IssueService>();
             services.AddScoped<IEventService, EventService>();
-            
+            services.AddScoped<IRecommendationService, RecommendationService>();
+
             // Register forms
             services.AddScoped<MainForm>();
             services.AddScoped<ReportIssueForm>();
