@@ -369,7 +369,7 @@ namespace PROG7312_POE.Forms
             var card = new Panel
             {
                 Width = width,
-                Height = 180,
+                Height = 220,
                 BackColor = Color.White,
                 BorderStyle = BorderStyle.FixedSingle,
                 Margin = new Padding(5),
@@ -378,10 +378,26 @@ namespace PROG7312_POE.Forms
                 Tag = evt.Id
             };
 
-            // Add click handler
+            // Added subtle shadow effect
+            card.Paint += (s, e) =>
+            {
+                using (var shadow = new SolidBrush(Color.FromArgb(20, 0, 0, 0)))
+                {
+                    e.Graphics.FillRectangle(shadow, 5, 5, card.Width, card.Height);
+                }
+                e.Graphics.FillRectangle(Brushes.White, 0, 0, card.Width - 5, card.Height - 5);
+            };
+
+            // Add hover effect
+            card.MouseEnter += (s, e) => card.BackColor = Color.FromArgb(250, 250, 250);
+            card.MouseLeave += (s, e) => card.BackColor = Color.White;
+
+            
+
+            // Added click handler
             card.Click += (s, e) => ShowEventDetails(evt);
 
-            // Add title
+            // Event title
             var title = new Label
             {
                 Text = evt.Title,
@@ -389,11 +405,11 @@ namespace PROG7312_POE.Forms
                 AutoSize = false,
                 Width = card.Width - 20,
                 Height = 40,
-                Location = new Point(10, 10)
+                Location = new Point(10, 110),
+                TextAlign = ContentAlignment.MiddleLeft
             };
-            card.Controls.Add(title);
 
-            // Add date
+            // Added date
             var dateText = $"{evt.StartDate:g}";
             if (evt.EndDate.HasValue)
             {
