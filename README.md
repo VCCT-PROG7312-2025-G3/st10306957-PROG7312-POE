@@ -55,5 +55,19 @@ A Windows Forms application that allows citizens to report issues and service re
    - I am going to enable the corresponding buttons in `Form1.cs`
    - I am going to create new forms for each feature
    - I will implement the required functionality
+  
+### I Have Added An Events Page
+   - On this page, you will now see events that are happening in the community
+   - You can search for events by something like category (e.g. family)
+   - You can use the filters
+   - You can clear all filters by the clear filters button on the top right of your screen
+   - You will also notice the first block of information on the top of the page is your recommended events based on what you usually interact with
+   - You can click on the even t to better view information
+
+### Improvements I Have Made
+   - I majorly improved my folder structure of my project
+   - I Have also made a screen that allowsyou to see the issues you havee reported
+   - The landing screen of the project has also been improved
+
 
 
