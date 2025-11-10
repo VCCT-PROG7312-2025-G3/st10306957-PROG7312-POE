@@ -556,23 +556,42 @@ namespace PROG7312_POE.Forms
         {
             try
             {
+                Console.WriteLine("Creating service scope for EventsForm...");
                 using (var scope = _serviceProvider.CreateScope())
                 {
+                    Console.WriteLine("Getting required services...");
                     var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
                     var recommendationService = scope.ServiceProvider.GetRequiredService<IRecommendationService>();
 
-                    this.Hide();
+                    Console.WriteLine("Creating EventsForm...");
                     using (var eventsForm = new EventsForm(eventService, recommendationService))
                     {
-                        eventsForm.ShowDialog();
+                        Console.WriteLine("Hiding MainForm...");
+                        this.Hide();
+                        try
+                        {
+                            Console.WriteLine("Showing EventsForm...");
+                            eventsForm.ShowDialog();
+                        }
+                        finally
+                        {
+                            Console.WriteLine("EventsForm closed. Showing MainForm...");
+                            this.Show();
+                            this.BringToFront();
+                        }
                     }
-                    this.Show();
                 }
             }
             catch (Exception ex)
             {
+                string errorMessage = $"Error in ShowEventsForm: {ex.Message}\n\n{ex.StackTrace}";
+                Console.WriteLine(errorMessage);
                 MessageBox.Show($"Error opening events: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
+                // Make sure the main form is shown even if there's an error
+                this.Show();
+                this.BringToFront();
             }
         }
 

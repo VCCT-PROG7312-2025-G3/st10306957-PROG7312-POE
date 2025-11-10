@@ -50,11 +50,11 @@
   <ItemGroup>
     <Compile Include="Data\IIssueRepository.cs" />
     <Compile Include="Data\IssueRepository.cs" />
+    <Compile Include="Extensions\PlaceholderTextBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Forms\EventsForm.cs">
       <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\EventsForm.Designer.cs">
-      <DependentUpon>EventsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
@@ -68,6 +68,7 @@
     <Compile Include="Forms\ReportIssueForm.Designer.cs">
       <DependentUpon>ReportIssueForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GraphicsExtensions.cs" />
     <Compile Include="Models\Event.cs" />
     <Compile Include="Models\Issue.cs" />
     <Compile Include="Models\UserSearch.cs" />
