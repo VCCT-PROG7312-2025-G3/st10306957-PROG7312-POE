@@ -17,6 +17,7 @@ namespace PROG7312_POE.Forms
         private Button currentButton;
         private Panel contentPanel;
         private Panel navigationPanel;
+        private Button btnHome;
         private Button btnReport;
         private Button btnEvents;
         private Button btnStatus;
@@ -80,15 +81,17 @@ namespace PROG7312_POE.Forms
             };
 
             // Create navigation buttons
+            btnHome = CreateNavButton("Home");
             btnReport = CreateNavButton("Report");
             btnEvents = CreateNavButton("Events");
             btnStatus = CreateNavButton("Status");
             var btnViewIssues = CreateNavButton("View Issues");
 
             // Set button properties
+            btnHome.Click += (s, e) => ShowHomeForm();
             btnReport.Click += (s, e) => ShowReportForm();
             btnEvents.Click += (s, e) => ShowEventsForm();
-            btnStatus.Click += (s, e) => ShowComingSoon("Service Status");
+            btnStatus.Click += (s, e) => ShowStatusForm();
             btnViewIssues.Click += (s, e) => ShowReportedIssues();
 
             // Add controls to navigation panel
@@ -96,6 +99,7 @@ namespace PROG7312_POE.Forms
             navigationPanel.Controls.Add(btnStatus);
             navigationPanel.Controls.Add(btnEvents);
             navigationPanel.Controls.Add(btnReport);
+            navigationPanel.Controls.Add(btnHome);
             navigationPanel.Controls.Add(titleLabel);
 
             // Create main container
@@ -110,47 +114,23 @@ namespace PROG7312_POE.Forms
             mainContainer.RowStyles.Add(new RowStyle(SizeType.Absolute, 80));
             mainContainer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-            // Welcome label
-            Label welcomeLabel = new Label
-            {
-                Text = "Your Reported Issues",
-                Font = new Font("Segoe UI", 20, FontStyle.Bold),
-                ForeColor = Color.FromArgb(0, 64, 122),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Dock = DockStyle.Fill,
-                Height = 60
-            };
-
-            // Issues container
-            var issuesPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                AutoScroll = true,
-                BackColor = Color.White,
-                WrapContents = false,
-                FlowDirection = FlowDirection.TopDown
-            };
-
-            // Add controls to main container
-            mainContainer.Controls.Add(welcomeLabel, 0, 0);
-            mainContainer.Controls.Add(issuesPanel, 0, 1);
+            // Create home control as default content
+            var homeControl = new HomeForm(this);
+            mainContainer.Controls.Add(homeControl, 0, 1);
 
             // Add panels to form
             contentPanel.Controls.Add(mainContainer);
             this.Controls.Add(contentPanel);
             this.Controls.Add(navigationPanel);
 
-            // Set initial active button
-            ActivateButton(btnReport);
+            // Show home form by default
+            ShowHomeForm();
 
             // Handle window resizing
             this.Resize += (s, e) => PositionButtons();
 
             // Initial button positioning
             PositionButtons();
-
-            // Load reported issues
-            LoadReportedIssues(issuesPanel);
         }
 
         private async void LoadReportedIssues(FlowLayoutPanel container)
@@ -444,7 +424,7 @@ namespace PROG7312_POE.Forms
 
         private void PositionButtons()
         {
-            if (btnReport == null || btnEvents == null || btnStatus == null)
+            if (btnHome == null || btnReport == null || btnEvents == null || btnStatus == null)
                 return;
 
             // Find the View Issues button in the navigation panel
@@ -452,16 +432,30 @@ namespace PROG7312_POE.Forms
             if (btnViewIssues == null) return;
 
             int buttonWidth = 100;
-            int buttonSpacing = 10;
-            int rightEdge = this.ClientSize.Width - 30;  // 30px from right edge
+            int buttonSpacing = 5;  // Reduced spacing to fit all buttons
+            int verticalPadding = 12;  // Vertical position from top
+            int rightEdge = this.ClientSize.Width - 20;  // 20px from right edge
+            int titleRightEdge = 220;  // Right edge of the "MUNICIPALITY" title (20px left + 200px width)
 
-            btnReport.Location = new Point(rightEdge - buttonWidth, 12);
-            btnEvents.Location = new Point(btnReport.Left - buttonWidth - buttonSpacing, 12);
-            btnStatus.Location = new Point(btnEvents.Left - buttonWidth - buttonSpacing, 12);
-            btnViewIssues.Location = new Point(btnStatus.Left - buttonWidth - buttonSpacing, 12);
+            // Position buttons from right to left
+            btnReport.Location = new Point(rightEdge - buttonWidth, verticalPadding);
+            btnEvents.Location = new Point(btnReport.Left - buttonWidth - buttonSpacing, verticalPadding);
+            btnStatus.Location = new Point(btnEvents.Left - buttonWidth - buttonSpacing, verticalPadding);
+            btnViewIssues.Location = new Point(btnStatus.Left - buttonWidth - buttonSpacing, verticalPadding);
+            
+            // Position Home button to the right of the title with some spacing
+            int homeLeft = titleRightEdge + 20;  // 20px after the title
+            btnHome.Location = new Point(homeLeft, verticalPadding);
+            
+            // Adjust width of Home button if needed to prevent overlap with other buttons
+            int availableSpace = btnViewIssues.Left - homeLeft - 10;  // 10px minimum spacing
+            if (availableSpace < buttonWidth)
+            {
+                btnHome.Width = Math.Max(80, availableSpace - 5);  // Minimum width of 80px
+            }
         }
 
-        private void ShowReportForm()
+        public void ShowReportForm()
         {
             try
             {
@@ -475,6 +469,11 @@ namespace PROG7312_POE.Forms
                     var result = reportForm.ShowDialog(this);
                     // Handle the result if needed
                 }
+                
+                if (btnReport != null)
+                {
+                    ActivateButton(btnReport);
+                }
             }
             catch (Exception ex)
             {
@@ -483,7 +482,7 @@ namespace PROG7312_POE.Forms
             }
         }
 
-        private void ShowReportedIssues()
+        public void ShowReportedIssues()
         {
             try
             {
@@ -504,7 +503,9 @@ namespace PROG7312_POE.Forms
                 LoadReportedIssues(issuesPanel);
 
                 // Update the active button
-                var btnViewIssues = navigationPanel.Controls.OfType<Button>().FirstOrDefault(b => b.Text == "View Issues");
+                var btnViewIssues = navigationPanel.Controls.OfType<Button>()
+                    .FirstOrDefault(b => b.Text == "View Issues");
+                    
                 if (btnViewIssues != null)
                 {
                     ActivateButton(btnViewIssues);
@@ -595,20 +596,62 @@ namespace PROG7312_POE.Forms
             }
         }
 
-        private void ShowComingSoon(string featureName)
+        public void ShowHomeForm()
         {
-            contentPanel.Controls.Clear();
-
-            Label message = new Label
+            try
             {
-                Text = $"{featureName}\n\nComing Soon...",
-                Font = new Font("Segoe UI", 24, FontStyle.Italic),
-                ForeColor = Color.LightGray,
-                TextAlign = ContentAlignment.MiddleCenter,
-                Dock = DockStyle.Fill
-            };
+                contentPanel.Controls.Clear();
+                var homeControl = new HomeForm(this);
+                contentPanel.Controls.Add(homeControl);
+                if (btnHome != null)
+                {
+                    ActivateButton(btnHome);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading home page: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
 
-            contentPanel.Controls.Add(message);
+
+
+        private void ShowStatusForm()
+        {
+            try
+            {
+                Console.WriteLine("Creating service scope for ServiceRequestStatusForm...");
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    this.Hide();
+                    try
+                    {
+                        Console.WriteLine("Creating and showing ServiceRequestStatusForm...");
+                        using (var statusForm = new ServiceRequestStatusForm())
+                        {
+                            statusForm.ShowDialog();
+                        }
+                    }
+                    finally
+                    {
+                        Console.WriteLine("ServiceRequestStatusForm closed. Showing MainForm...");
+                        this.Show();
+                        this.BringToFront();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = $"Error in ShowStatusForm: {ex.Message}\n\n{ex.StackTrace}";
+                Console.WriteLine(errorMessage);
+                MessageBox.Show($"Error opening service status: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                // Make sure the main form is shown even if there's an error
+                this.Show();
+                this.BringToFront();
+            }
         }
     }
 }
