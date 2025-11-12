@@ -13,7 +13,14 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <Features>strict;flow-analysis</Features>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
@@ -49,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStructures\ServiceRequestGraph.cs" />
+    <Compile Include="DataStructures\ServiceRequestHeap.cs" />
     <Compile Include="DataStructures\ServiceRequestTree.cs" />
     <Compile Include="Data\IIssueRepository.cs" />
     <Compile Include="Data\IssueRepository.cs" />
@@ -73,6 +81,12 @@
     <Compile Include="Forms\ReportIssueForm.Designer.cs">
       <DependentUpon>ReportIssueForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\PriorityQueueForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\PriorityQueueForm.Designer.cs">
+      <DependentUpon>PriorityQueueForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\ServiceRequestStatusForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -89,6 +103,7 @@
     <Compile Include="Services\IRecommendationService.cs" />
     <Compile Include="Services\IssueService.cs" />
     <Compile Include="Services\RecommendationService.cs" />
+    <Compile Include="Services\RequestPriorityService.cs" />
     <Compile Include="Utilities\Constants.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\Resources.Designer.cs">

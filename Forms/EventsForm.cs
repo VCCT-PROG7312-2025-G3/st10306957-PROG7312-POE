@@ -28,7 +28,7 @@ namespace PROG7312_POE.Forms
         private Panel loadingPanel;
         private Panel eventsContainer;
         private TableLayoutPanel mainLayout;
-        private IContainer components;
+        
         private PlaceholderTextBox searchBox;
         private ComboBox categoryCombo;
         private List<Event> _allEvents = new List<Event>();
@@ -400,6 +400,16 @@ namespace PROG7312_POE.Forms
         private void ShowEventDetails(Event evt)
         {
             _selectedEvent = evt;
+            
+            // Create main container with padding
+            var mainContainer = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                Padding = new Padding(25, 20, 25, 20),
+                BackColor = Color.White
+            };
+            
             var detailsForm = new Form
             {
                 Text = evt.Title,

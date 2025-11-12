@@ -45,11 +45,13 @@ namespace PROG7312_POE
             services.AddScoped<IIssueService, IssueService>();
             services.AddScoped<IEventService, EventService>();
             services.AddScoped<IRecommendationService, RecommendationService>();
+            services.AddSingleton<RequestPriorityService>();
 
             // Register forms
             services.AddScoped<MainForm>();
             services.AddScoped<ReportIssueForm>();
             services.AddScoped<EventsForm>();
+            services.AddScoped<PriorityQueueForm>();
         }
     }
 }

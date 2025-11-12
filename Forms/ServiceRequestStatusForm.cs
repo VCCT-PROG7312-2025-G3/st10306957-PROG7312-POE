@@ -27,10 +27,7 @@ namespace PROG7312_POE.Forms
         private Panel pnlRequestDetails;
         private Label lblRequestDetails;
         private ProgressBar progressBar1;
-        private Button btnAddDependency;
-        private Button btnViewGraph;
-        private Button btnViewTimeline;
-
+        
         public ServiceRequestStatusForm()
         {
             _requestTree = new ServiceRequestTree();
@@ -50,24 +47,26 @@ namespace PROG7312_POE.Forms
             this.Text = "Service Request Status";
             this.Size = new Size(1200, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Padding = new Padding(10);
+            this.Padding = new Padding(15);
             this.BackColor = Color.White;
+            this.MinimumSize = new Size(800, 600); // Set minimum size to prevent controls from overlapping
 
             // Search box
             txtSearch = new PlaceholderTextBox
             {
                 Location = new Point(10, 10),
-                Size = new Size(300, 30),
-                PlaceholderText = "Search by Request ID or Description"
+                Size = new Size(200, 30),
+                PlaceholderText = "Search..."
             };
             txtSearch.TextChanged += (s, e) => FilterRequests();
 
             // Status filter
             cmbStatusFilter = new ComboBox
             {
-                Location = new Point(320, 10),
+                Location = new Point(330, 15),
                 Size = new Size(150, 30),
-                DropDownStyle = ComboBoxStyle.DropDownList
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
             cmbStatusFilter.Items.AddRange(Enum.GetNames(typeof(RequestStatus)));
             cmbStatusFilter.SelectedIndexChanged += (s, e) => FilterRequests();
@@ -75,9 +74,10 @@ namespace PROG7312_POE.Forms
             // Priority filter
             cmbPriorityFilter = new ComboBox
             {
-                Location = new Point(480, 10),
-                Size = new Size(120, 30),
-                DropDownStyle = ComboBoxStyle.DropDownList
+                Location = new Point(490, 15),
+                Size = new Size(140, 30),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
             cmbPriorityFilter.Items.Add("All Priorities");
             cmbPriorityFilter.Items.AddRange(Enum.GetNames(typeof(RequestPriority)));
@@ -88,11 +88,12 @@ namespace PROG7312_POE.Forms
             btnSearch = new Button
             {
                 Text = "Search",
-                Location = new Point(610, 10),
-                Size = new Size(80, 30),
+                Location = new Point(640, 15),
+                Size = new Size(100, 30),
                 BackColor = Color.FromArgb(0, 120, 215),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
             btnSearch.FlatAppearance.BorderSize = 0;
             btnSearch.Click += (s, e) => FilterRequests();
@@ -101,9 +102,10 @@ namespace PROG7312_POE.Forms
             btnResetFilters = new Button
             {
                 Text = "Reset",
-                Location = new Point(700, 10),
-                Size = new Size(80, 30),
-                FlatStyle = FlatStyle.Flat
+                Location = new Point(750, 15),
+                Size = new Size(100, 30),
+                FlatStyle = FlatStyle.Flat,
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
             };
             btnResetFilters.Click += (s, e) =>
             {
@@ -116,8 +118,8 @@ namespace PROG7312_POE.Forms
             // DataGridView for requests
             dgvRequests = new DataGridView
             {
-                Location = new Point(10, 50),
-                Size = new Size(770, 500),
+                Location = new Point(15, 60),
+                Size = new Size(800, 500),
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
@@ -128,43 +130,137 @@ namespace PROG7312_POE.Forms
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                GridColor = Color.FromArgb(240, 240, 240)
+                GridColor = Color.FromArgb(240, 240, 240),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                Margin = new Padding(5)
             };
             dgvRequests.SelectionChanged += DgvRequests_SelectionChanged;
 
             // Details panel
             pnlRequestDetails = new Panel
             {
-                Location = new Point(790, 50),
-                Size = new Size(380, 600),
+                Location = new Point(830, 60),
+                Size = new Size(400, 500),
                 BorderStyle = BorderStyle.FixedSingle,
                 AutoScroll = true,
-                Padding = new Padding(10)
+                Padding = new Padding(15),
+                BackColor = Color.White,
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right
             };
 
             // Progress bar
             progressBar1 = new ProgressBar
             {
-                Location = new Point(10, 560),
-                Size = new Size(760, 20),
-                Style = ProgressBarStyle.Continuous
+                Location = new Point(15, 570),
+                Size = new Size(800, 20),
+                Style = ProgressBarStyle.Continuous,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                Margin = new Padding(5, 10, 5, 10)
             };
 
-            // Add controls to form
-            this.Controls.Add(txtSearch);
-            this.Controls.Add(cmbStatusFilter);
-            this.Controls.Add(cmbPriorityFilter);
-            this.Controls.Add(btnSearch);
-            this.Controls.Add(btnResetFilters);
-            this.Controls.Add(dgvRequests);
-            this.Controls.Add(pnlRequestDetails);
-            this.Controls.Add(progressBar1);
+            // Main container panel
+            var mainContainer = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 3,
+                ColumnStyles = 
+                {
+                    new ColumnStyle(SizeType.Percent, 70F) { Width = 70 },
+                    new ColumnStyle(SizeType.Percent, 30F) { Width = 30 }
+                },
+                RowStyles = 
+                {
+                    new RowStyle(SizeType.Absolute, 60F),  // Search/filter row
+                    new RowStyle(SizeType.Percent, 100F),  // Content row
+                    new RowStyle(SizeType.Absolute, 60F)   // Progress bar row
+                },
+                Padding = new Padding(0),
+                Margin = new Padding(0),
+                BackColor = Color.White
+            };
+
+            // Search panel (top row, spans both columns)
+            var searchPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Padding = new Padding(10, 15, 10, 10),
+                BackColor = Color.White
+            };
+            
+            // Set fixed sizes for controls
+            txtSearch.Width = 200;
+            cmbStatusFilter.Width = 150;
+            cmbPriorityFilter.Width = 120;
+            btnSearch.Width = 80;
+            btnResetFilters.Width = 80;
+            
+            // Add spacing between controls
+            searchPanel.Controls.Add(txtSearch);
+            searchPanel.SetFlowBreak(txtSearch, false);
+            
+            searchPanel.Controls.Add(cmbStatusFilter);
+            searchPanel.SetFlowBreak(cmbStatusFilter, false);
+            
+            searchPanel.Controls.Add(cmbPriorityFilter);
+            searchPanel.SetFlowBreak(cmbPriorityFilter, false);
+            
+            searchPanel.Controls.Add(btnSearch);
+            searchPanel.SetFlowBreak(btnSearch, false);
+            
+            searchPanel.Controls.Add(btnResetFilters);
+            searchPanel.SetFlowBreak(btnResetFilters, true);
+            
+            // Data grid view (left side, middle row)
+            dgvRequests.Dock = DockStyle.Fill;
+            dgvRequests.Margin = new Padding(5);
+            
+            // Details panel (right side, middle row)
+            pnlRequestDetails.Dock = DockStyle.Fill;
+            
+            // Progress bar (bottom row, spans both columns)
+            progressBar1.Dock = DockStyle.Top;
+            progressBar1.Margin = new Padding(10, 5, 10, 5);
+            progressBar1.Height = 30;
+            
+            var progressContainer = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(5),
+                BackColor = Color.White
+            };
+            progressContainer.Controls.Add(progressBar1);
+            
+            // Add all controls to the main container
+            mainContainer.Controls.Add(searchPanel, 0, 0);
+            mainContainer.SetColumnSpan(searchPanel, 2);
+            
+            mainContainer.Controls.Add(dgvRequests, 0, 1);
+            mainContainer.Controls.Add(pnlRequestDetails, 1, 1);
+            
+            mainContainer.Controls.Add(progressContainer, 0, 2);
+            mainContainer.SetColumnSpan(progressContainer, 2);
+            
+            // Add the main container to the form
+            this.Controls.Add(mainContainer);
+            
+            // No need for manual positioning with FlowLayoutPanel
 
             // Setup data grid view columns
             SetupDataGridView();
 
             this.ResumeLayout(false);
             this.PerformLayout();
+        }
+
+        private void UpdateLayout()
+        {
+            // This method is no longer needed as we're using Dock and Anchor properties
+            // for layout management
         }
 
         private void SetupDataGridView()

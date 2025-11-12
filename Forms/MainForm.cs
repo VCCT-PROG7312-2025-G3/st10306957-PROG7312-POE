@@ -23,10 +23,15 @@ namespace PROG7312_POE.Forms
         private Button btnStatus;
 
         public MainForm() : this(
-            new IssueService(new IssueRepository(), new FileService()),
+            new IssueService(
+                new IssueRepository(), 
+                new FileService(),
+                new RequestPriorityService()
+            ),
             new ServiceCollection()
                 .AddScoped<IIssueRepository, IssueRepository>()
                 .AddScoped<IFileService, FileService>()
+                .AddScoped<RequestPriorityService>()
                 .AddScoped<IIssueService, IssueService>()
                 .AddScoped<IEventService, EventService>()
                 .AddScoped<IRecommendationService, RecommendationService>()
@@ -46,46 +51,50 @@ namespace PROG7312_POE.Forms
         {
             // Form settings
             this.Text = "Municipality Services";
-            this.Size = new Size(1000, 700);
+            this.Size = new Size(1100, 750); // Slightly larger default size
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.BackColor = Color.White;
             this.Padding = new Padding(0);
 
-            // Main content panel
+            // Main content panel with padding
             contentPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.White
+                BackColor = Color.White,
+                Padding = new Padding(20)
             };
 
             // Navigation Panel
             navigationPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 60,
+                Height = 70,  // Increased height
                 BackColor = Color.FromArgb(0, 64, 122),
-                Padding = new Padding(0, 0, 20, 0)  // Right padding
+                Padding = new Padding(0, 0, 30, 0)  // Increased right padding
             };
 
-            // Title Label
+            // Title Label with better spacing
             Label titleLabel = new Label
             {
                 Text = "MUNICIPALITY",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = Color.White,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Location = new Point(20, 0),
-                Size = new Size(200, 60)
+                Location = new Point(25, 0),
+                AutoSize = true,
+                Height = 70,
+                Padding = new Padding(0, 0, 0, 5)  // Add some bottom padding
             };
 
-            // Create navigation buttons
+            // Create navigation buttons with consistent sizing
             btnHome = CreateNavButton("Home");
             btnReport = CreateNavButton("Report");
             btnEvents = CreateNavButton("Events");
             btnStatus = CreateNavButton("Status");
             var btnViewIssues = CreateNavButton("View Issues");
+            var btnPriorityQueue = CreateNavButton("Priority"); // Shorter text for better fit
 
             // Set button properties
             btnHome.Click += (s, e) => ShowHomeForm();
@@ -93,8 +102,10 @@ namespace PROG7312_POE.Forms
             btnEvents.Click += (s, e) => ShowEventsForm();
             btnStatus.Click += (s, e) => ShowStatusForm();
             btnViewIssues.Click += (s, e) => ShowReportedIssues();
+            btnPriorityQueue.Click += (s, e) => ShowPriorityQueueForm();
 
             // Add controls to navigation panel
+            navigationPanel.Controls.Add(btnPriorityQueue);
             navigationPanel.Controls.Add(btnViewIssues);
             navigationPanel.Controls.Add(btnStatus);
             navigationPanel.Controls.Add(btnEvents);
@@ -126,11 +137,11 @@ namespace PROG7312_POE.Forms
             // Show home form by default
             ShowHomeForm();
 
-            // Handle window resizing
-            this.Resize += (s, e) => PositionButtons();
+            // Handle window resizing with proper padding
+            this.Resize += (s, e) => PositionButtons(30);
 
-            // Initial button positioning
-            PositionButtons();
+            // Initial button positioning with right padding
+            PositionButtons(30);
         }
 
         private async void LoadReportedIssues(FlowLayoutPanel container)
@@ -422,36 +433,37 @@ namespace PROG7312_POE.Forms
         }
         
 
-        private void PositionButtons()
+        private void PositionButtons(int rightPadding = 30)
         {
-            if (btnHome == null || btnReport == null || btnEvents == null || btnStatus == null)
-                return;
-
-            // Find the View Issues button in the navigation panel
-            var btnViewIssues = navigationPanel.Controls.OfType<Button>().FirstOrDefault(b => b.Text == "View Issues");
-            if (btnViewIssues == null) return;
+            if (navigationPanel == null) return;
 
             int buttonWidth = 100;
-            int buttonSpacing = 5;  // Reduced spacing to fit all buttons
-            int verticalPadding = 12;  // Vertical position from top
-            int rightEdge = this.ClientSize.Width - 20;  // 20px from right edge
-            int titleRightEdge = 220;  // Right edge of the "MUNICIPALITY" title (20px left + 200px width)
+            int buttonSpacing = 10;
+            int buttonHeight = 40;
+            int topMargin = (navigationPanel.Height - buttonHeight) / 2;
 
-            // Position buttons from right to left
-            btnReport.Location = new Point(rightEdge - buttonWidth, verticalPadding);
-            btnEvents.Location = new Point(btnReport.Left - buttonWidth - buttonSpacing, verticalPadding);
-            btnStatus.Location = new Point(btnEvents.Left - buttonWidth - buttonSpacing, verticalPadding);
-            btnViewIssues.Location = new Point(btnStatus.Left - buttonWidth - buttonSpacing, verticalPadding);
+            // Start positioning buttons from the right
+            int rightPosition = navigationPanel.Width - rightPadding;
+
+            // List of buttons in order from right to left
+            var buttons = navigationPanel.Controls.OfType<Button>()
+                                 .OrderByDescending(b => b.Text == "Priority" ? 0 : 
+                                                    b.Text == "View Issues" ? 1 :
+                                                    b.Text == "Status" ? 2 :
+                                                    b.Text == "Events" ? 3 :
+                                                    b.Text == "Report" ? 4 : 5)
+                                 .ToList();
             
-            // Position Home button to the right of the title with some spacing
-            int homeLeft = titleRightEdge + 20;  // 20px after the title
-            btnHome.Location = new Point(homeLeft, verticalPadding);
-            
-            // Adjust width of Home button if needed to prevent overlap with other buttons
-            int availableSpace = btnViewIssues.Left - homeLeft - 10;  // 10px minimum spacing
-            if (availableSpace < buttonWidth)
+            foreach (var button in buttons)
             {
-                btnHome.Width = Math.Max(80, availableSpace - 5);  // Minimum width of 80px
+                if (button != null)
+                {
+                    int width = button.Text == "Priority" ? 90 : buttonWidth;
+                    rightPosition -= width;
+                    button.Location = new Point(rightPosition, topMargin);
+                    button.Size = new Size(width, buttonHeight);
+                    rightPosition -= buttonSpacing;
+                }
             }
         }
 
@@ -523,20 +535,21 @@ namespace PROG7312_POE.Forms
             return new Button
             {
                 Text = text,
-                Size = new Size(100, 36),
                 FlatStyle = FlatStyle.Flat,
-                FlatAppearance = {
+                FlatAppearance = { 
                     BorderSize = 0,
-                    MouseOverBackColor = Color.FromArgb(0, 95, 179)
+                    MouseOverBackColor = Color.FromArgb(0, 40, 80) // Hover effect
                 },
                 BackColor = Color.Transparent,
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10, FontStyle.Regular),
-                Cursor = Cursors.Hand,
-                TextAlign = ContentAlignment.MiddleCenter,
+                Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, 0),
+                Height = 40,
+                Width = text == "Priority" ? 90 : 100, // Adjust width based on text
                 Margin = new Padding(5, 0, 5, 0),
-                Padding = new Padding(0),
-                AutoSize = false
+                Padding = new Padding(5),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Cursor = Cursors.Hand,
+                TabStop = false // Remove focus rectangle
             };
         }
 
@@ -553,46 +566,65 @@ namespace PROG7312_POE.Forms
             currentButton = button;
         }
 
+        private void ClearContentPanel()
+        {
+            contentPanel.Controls.Clear();
+        }
+
+        private void UpdateActiveButton(Button activeButton)
+        {
+            // Reset all buttons
+            foreach (Control control in navigationPanel.Controls)
+            {
+                if (control is Button button)
+                {
+                    button.BackColor = Color.Transparent;
+                    button.Font = new Font(button.Font, FontStyle.Regular);
+                }
+            }
+
+            // Set active button style
+            if (activeButton != null)
+            {
+                activeButton.BackColor = Color.FromArgb(0, 95, 179);
+                activeButton.Font = new Font(activeButton.Font, FontStyle.Bold);
+            }
+        }
+
         private void ShowEventsForm()
         {
             try
             {
-                Console.WriteLine("Creating service scope for EventsForm...");
-                using (var scope = _serviceProvider.CreateScope())
+                ClearContentPanel();
+                
+                // Create a panel to hold the events form with padding
+                var containerPanel = new Panel
                 {
-                    Console.WriteLine("Getting required services...");
-                    var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
-                    var recommendationService = scope.ServiceProvider.GetRequiredService<IRecommendationService>();
+                    Dock = DockStyle.Fill,
+                    Padding = new Padding(10)
+                };
 
-                    Console.WriteLine("Creating EventsForm...");
-                    using (var eventsForm = new EventsForm(eventService, recommendationService))
-                    {
-                        Console.WriteLine("Hiding MainForm...");
-                        this.Hide();
-                        try
-                        {
-                            Console.WriteLine("Showing EventsForm...");
-                            eventsForm.ShowDialog();
-                        }
-                        finally
-                        {
-                            Console.WriteLine("EventsForm closed. Showing MainForm...");
-                            this.Show();
-                            this.BringToFront();
-                        }
-                    }
-                }
+                var eventService = _serviceProvider.GetRequiredService<IEventService>();
+                var recommendationService = _serviceProvider.GetRequiredService<IRecommendationService>();
+                var eventsForm = new EventsForm(eventService, recommendationService);
+                
+                eventsForm.TopLevel = false;
+                eventsForm.FormBorderStyle = FormBorderStyle.None;
+                eventsForm.Dock = DockStyle.Fill;
+                
+                // Add the form to the container panel
+                containerPanel.Controls.Add(eventsForm);
+                
+                // Add the container to the content panel
+                contentPanel.Controls.Add(containerPanel);
+                
+                eventsForm.Show();
+                UpdateActiveButton(btnEvents);
             }
             catch (Exception ex)
             {
-                string errorMessage = $"Error in ShowEventsForm: {ex.Message}\n\n{ex.StackTrace}";
-                Console.WriteLine(errorMessage);
-                MessageBox.Show($"Error opening events: {ex.Message}", "Error",
+                MessageBox.Show($"Error loading events: {ex.Message}", "Error", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-                
-                // Make sure the main form is shown even if there's an error
-                this.Show();
-                this.BringToFront();
             }
         }
 
@@ -615,31 +647,39 @@ namespace PROG7312_POE.Forms
             }
         }
 
-
-
         private void ShowStatusForm()
         {
             try
             {
                 Console.WriteLine("Creating service scope for ServiceRequestStatusForm...");
-                using (var scope = _serviceProvider.CreateScope())
+                contentPanel.Controls.Clear();
+                
+                // Create a container panel with padding
+                var containerPanel = new Panel
                 {
-                    this.Hide();
-                    try
-                    {
-                        Console.WriteLine("Creating and showing ServiceRequestStatusForm...");
-                        using (var statusForm = new ServiceRequestStatusForm())
-                        {
-                            statusForm.ShowDialog();
-                        }
-                    }
-                    finally
-                    {
-                        Console.WriteLine("ServiceRequestStatusForm closed. Showing MainForm...");
-                        this.Show();
-                        this.BringToFront();
-                    }
-                }
+                    Dock = DockStyle.Fill,
+                    Padding = new Padding(10)
+                };
+                
+                var statusForm = new ServiceRequestStatusForm
+                {
+                    TopLevel = false,
+                    FormBorderStyle = FormBorderStyle.None,
+                    Dock = DockStyle.Fill
+                };
+                
+                // Add the form to the container panel
+                containerPanel.Controls.Add(statusForm);
+                
+                // Add the container to the content panel
+                contentPanel.Controls.Add(containerPanel);
+                
+                statusForm.Show();
+                UpdateActiveButton(btnStatus);
+                
+                // Force a layout update to ensure proper sizing
+                contentPanel.PerformLayout();
+                statusForm.PerformLayout();
             }
             catch (Exception ex)
             {
@@ -651,6 +691,23 @@ namespace PROG7312_POE.Forms
                 // Make sure the main form is shown even if there's an error
                 this.Show();
                 this.BringToFront();
+            }
+        }
+
+        private void ShowPriorityQueueForm()
+        {
+            try
+            {
+                using (var scope = _serviceProvider.CreateScope())
+                using (var priorityQueueForm = scope.ServiceProvider.GetRequiredService<PriorityQueueForm>())
+                {
+                    priorityQueueForm.ShowDialog(this);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening priority queue: {ex.Message}", "Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

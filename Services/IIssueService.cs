@@ -10,5 +10,11 @@ namespace PROG7312_POE.Services
         Task<IEnumerable<Issue>> GetIssuesAsync();
         Task<Issue> GetIssueByIdAsync(int id);
         Task<bool> UpdateIssueStatusAsync(int id, string status);
+        
+        // Priority Queue Methods
+        Task<ServiceRequest> GetNextPriorityRequestAsync();
+        Task<bool> UpdateRequestPriorityAsync(string requestId, RequestPriority newPriority);
+        Task<IEnumerable<ServiceRequest>> GetAllPriorityRequestsAsync();
+        Task<bool> RemoveRequestFromQueueAsync(string requestId);
     }
 }
